@@ -1,1 +1,10 @@
 看解释器是否正确安装,是否两个虚拟环境冲突
+-->PyCharm 绑定解释器（解决 IDE 提示找不到编译器）
+打开顶部菜单栏 File → Settings → Project: General_RAG → Python Interpreter
+右上角齿轮图标 → Add
+左侧选择 Existing environment
+浏览选中路径：
+plaintextC:\Users\LENOVO\PycharmProjects\General_RAG\venv\Scripts\python.exe
+
+
+点击 OK 确认，PyCharm 会自动加载该虚拟环境的全部依赖包。
