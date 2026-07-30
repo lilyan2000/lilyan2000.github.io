@@ -1,2 +1,44 @@
-https://get.docker.com/查命令
-https://hub.docker.com/查镜像 docker pull ...拉取
+1.https://get.docker.com/查命令
+2.https://hub.docker.com/查镜像 docker pull ...拉取
+3.拉取的 milvusdb/milvus:master-20260730-7f8df38c 是分布式集群镜像:
+不自带内置 etcd，直接单容器 run 会直接崩溃，
+必须分 3 步：启动 etcd → 启动 minio 存储 → 启动 Milvus 主服务:
+docker run -d \
+  --name milvus-etcd \
+  -p 2379:2379 \
+  -v ~/milvus-cluster/etcd:/etcd-data \
+  quay.io/coreos/etcd:v3.5.12 \
+  etcd \
+  --data-dir=/etcd-data \
+  --name etcd-node-0 \
+  --listen-client-urls=http://0.0.0.0:2379 \
+  --advertise-client-urls=http://127.0.0.1:2379 \
+  --listen-peer-urls=http://0.0.0.0:2380
+
+
+docker run -d \
+  --name milvus-minio \
+  -p 9000:9000 -p 9090:9090 \
+  -e MINIO_ROOT_USER=minioadmin \
+  -e MINIO_ROOT_PASSWORD=minioadmin \
+  -v ~/milvus-cluster/minio:/data \
+  minio/minio:latest server /data --console-address ":9090"
+
+
+
+docker run -d \
+  --name milvus-master \
+  -p 19530:19530 \
+  -p 9091:9091 \
+  -e ETCD_ENDPOINTS=http://127.0.0.1:2379 \
+  -e MINIO_ADDRESS=127.0.0.1:9000 \
+  -e MINIO_ACCESS_KEY=minioadmin \
+  -e MINIO_SECRET_KEY=minioadmin \
+  -v ~/milvus-cluster/milvus:/var/lib/milvus \
+  milvusdb/milvus:master-20260730-7f8df38c
+
+全部启动后校验:
+# 查看三个容器是否都是 Up 状态
+docker ps
+# 实时看 Milvus 日志，出现 19530 监听即就绪
+docker logs -f milvus-master
