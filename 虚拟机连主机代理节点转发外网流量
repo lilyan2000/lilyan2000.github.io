@@ -39,3 +39,10 @@ export HTTPS_PROXY="http://192.168.1.100:7890"
 export ALL_PROXY="socks5://192.168.1.100:7890"
 EOF
 source /etc/profile
+
+# Redis 推荐稳定轻量版
+docker pull redis:7-alpine
+# Milvus 2.5.7稳定版
+docker pull milvusdb/milvus:v2.5.7
+# Etcd 配套版本
+docker pull quay.io/coreos/etcd:v3.5.18
